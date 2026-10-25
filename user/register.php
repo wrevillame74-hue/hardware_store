@@ -1,6 +1,7 @@
 <?php
 include('../includes/config.php');
 include('../includes/alert.php');
+require_once('../includes/mailer.php');
 
 if (!empty($_SESSION['user_id'])) {
     header('Location: ' . BASE_URL . '/index.php');
@@ -71,9 +72,30 @@ mysqli_execute_query(
             mysqli_execute_query($conn, "INSERT INTO customer (user_id, fname, lname, address, contact) VALUES (?, ?, ?, ?, ?)", [$user_id, $fname, $lname, $address, $contact]);
             mysqli_commit($conn);
 
-            set_alert('success', 'Account created. Please check your email to verify your account.');
-            header('Location: ' . BASE_URL . '/user/login.php');
-            exit;
+$verification_link = BASE_URL . '/user/verify_email.php?token=' . urlencode($verification_token);
+
+$email_body = '
+    <h2>Welcome to Sturdy Supplies!</h2>
+    <p>Hello ' . htmlspecialchars($fname) . ',</p>
+    <p>Thank you for creating an account with Sturdy Supplies.</p>
+    <p>Please click the link below to verify your email address:</p>
+    <p>
+        <a href="' . htmlspecialchars($verification_link, ENT_QUOTES, 'UTF-8') . '"
+           style="display:inline-block;padding:12px 20px;background:#DC2626;color:#ffffff;text-decoration:none;border-radius:5px;">
+            Verify My Email
+        </a>
+    </p>
+    <p>If you did not create this account, you can ignore this email.</p>
+';
+
+if (send_mail($email, $fname . ' ' . $lname, 'Verify Your Sturdy Supplies Account', $email_body)) {
+    set_alert('success', 'Account created! Please check your email to verify your account.');
+} else {
+    set_alert('error', 'Your account was created, but the verification email could not be sent. Please contact the administrator.');
+}
+
+header('Location: ' . BASE_URL . '/user/login.php');
+exit;
         } catch (mysqli_sql_exception $e) {
             mysqli_rollback($conn);
             $errors[] = 'Something went wrong. Please try again.';

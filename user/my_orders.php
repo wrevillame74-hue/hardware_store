@@ -1,11 +1,8 @@
 <?php
 include('../includes/config.php');
 include('../includes/alert.php');
+include('../includes/guard_customer.php');
 
-if (empty($_SESSION['user_id'])) {
-    header('Location: ' . BASE_URL . '/user/login.php');
-    exit;
-}
 
 $customer_result = mysqli_execute_query($conn, "SELECT customer_id FROM customer WHERE user_id = ?", [$_SESSION['user_id']]);
 $customer = mysqli_fetch_assoc($customer_result);
@@ -37,7 +34,7 @@ include('../includes/header.php');
         <td><?= htmlspecialchars($order['order_date']) ?></td>
         <td><?= htmlspecialchars(ucfirst($order['status'])) ?></td>
         <td>
-          <a href="<?= BASE_URL ?>/user/receipt.php?order_id=<?= $order['order_id'] ?>"><button>View Receipt</button></a>
+          <a href="<?= BASE_URL ?>/user/order_details.php?order_id=<?= $order['order_id'] ?>"><button>View Order</button></a>
           <?php if ($order['status'] === 'processing'): ?>
             <form method="post" action="<?= BASE_URL ?>/user/cancel_order.php" class="inline-form" onsubmit="return confirm('Cancel this order?');">
               <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">

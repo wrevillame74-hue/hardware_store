@@ -1,6 +1,7 @@
 <?php
 include('../includes/config.php');
 include('../includes/alert.php');
+include('../includes/alert.php');
 
 if (empty($_SESSION['user_id'])) {
     header('Location: ' . BASE_URL . '/user/login.php');
